@@ -1,11 +1,11 @@
 // Copyright 2019 Mityagina Daria
-#include "./modules/task_1/mityagina_d_sum_of_matrix_elements/sum_of_matrix_elements.h"
+#include "../../../modules/task_1/mityagina_d_sum_of_matrix_elements/sum_of_matrix_elements.h"
 #include <mpi.h>
 #include <math.h>
 #include <ctime>
 #include <vector>
+#include <random>
 #include <stdexcept>
-
 
 #define MIN(a, b) (a > b)? b : a;
 #define MAX(a, b) (a < b)? b : a;
@@ -18,20 +18,43 @@ int Work(int size, std::vector<int> matrix) {
   int calculate_part = size / p_size;
   int dop = size % p_size;
   int part_size = calculate_part;
-  std::vector<int> recieved = std::vector<int>(part_size, 0);
+  std::vector<int> recieved = std::vector<int>(size, 0);
+
+  int errorCode;
+
+  if (rank == 0) {
+    if (size <= 0) {
+      errorCode = 1;
+    } else {
+      errorCode = 0;
+    }
+    for (int proc = 1; proc < p_size; ++proc)
+      MPI_Send(&errorCode, 1, MPI_INT, proc, 9, MPI_COMM_WORLD);
+  } else {
+    MPI_Status status;
+    MPI_Recv(&errorCode, 1, MPI_INT, 0, 9, MPI_COMM_WORLD, &status);
+  }
+  switch (errorCode) {
+  case 0:
+    break;
+  case 1:
+    throw std::runtime_error("size <= 0");
+  }
   if (rank == 0) {
     for (int proc = 1; proc < p_size ; proc++) {
       if (part_size > 0)
         MPI_Send(&matrix[0] + proc * calculate_part + dop, part_size, MPI_INT, proc, 1, MPI_COMM_WORLD);
     }
     std::vector<int> recieved = std::vector<int>(matrix.begin(), matrix.begin() + calculate_part + dop);
-    part_sum = SumOfMatrixElementsPartly(recieved, calculate_part + dop);
+    part_sum = SumOfMatrixElementsPartly(recieved, calculate_part + dop, 0);
   } else {
     for (int proc = 1; proc < p_size; proc++) {
       if (part_size > 0) {
         MPI_Status status;
-        MPI_Recv(&recieved[0], part_size, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
-        part_sum = SumOfMatrixElementsPartly(recieved, part_size);
+        MPI_Recv(&recieved[0] + proc * calculate_part + dop, part_size, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
+        int offset = proc * calculate_part + dop;
+
+        part_sum = SumOfMatrixElementsPartly(recieved, part_size, offset);
       }
     }
   }
@@ -42,10 +65,10 @@ int Work(int size, std::vector<int> matrix) {
   return sum_res;
 }
 
-int SumOfMatrixElementsPartly(std::vector<int> matrix, int size) {
+int SumOfMatrixElementsPartly(std::vector<int> matrix, int size, int offset) {
   int sum = 0;
   for (int i = 0; i < size; i++)
-    sum += matrix[i];
+    sum += matrix[i + offset];
   return sum;
 }
 

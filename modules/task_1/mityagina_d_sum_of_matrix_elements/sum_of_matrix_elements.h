@@ -12,7 +12,7 @@ int Work(int size, std::vector<int> matrix);
 void FreeMem();
 
 // работа с отдельной частью, вычисление суммы
-int SumOfMatrixElementsPartly(std::vector<int> matrix, int size);
+int SumOfMatrixElementsPartly(std::vector<int> matrix, int size, int offset);
 
 std::vector<int> getMatrix(const int size);
 

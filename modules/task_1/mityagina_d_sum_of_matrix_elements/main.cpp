@@ -4,9 +4,7 @@
 #include <mpi.h>
 #include <vector>
 #include <iostream>
-#include "./sum_of_matrix_elements.h"
-
-// using namespace std;
+#include "../../../modules/task_1/mityagina_d_sum_of_matrix_elements/sum_of_matrix_elements.h"
 
 void testing_lab(int size) {
     int answer, result = 0;

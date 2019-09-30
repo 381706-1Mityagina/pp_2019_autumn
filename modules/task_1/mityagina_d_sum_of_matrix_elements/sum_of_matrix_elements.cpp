@@ -12,7 +12,7 @@
 
 int Work(int size, std::vector<int> matrix) {
   int sum_res = 0, part_sum = 0;
-  int rank, p_size;
+  int rank, p_size, offset;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &p_size);
   int calculate_part = size / p_size;
@@ -52,7 +52,7 @@ int Work(int size, std::vector<int> matrix) {
       if (part_size > 0) {
         MPI_Status status;
         MPI_Recv(&recieved[0] + proc * calculate_part + dop, part_size, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
-        int offset = proc * calculate_part + dop;
+        offset = proc * calculate_part + dop;
 
         part_sum = SumOfMatrixElementsPartly(recieved, part_size, offset);
       }

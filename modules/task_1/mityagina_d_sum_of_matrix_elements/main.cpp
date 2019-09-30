@@ -43,6 +43,25 @@ TEST(Sum_of_matrix_elements_MPI, Test_On_Size_1000000) {
     testing_lab(size);
 }
 
+TEST(Sum_of_matrix_elements_MPI, Negative_matrix_size) {
+    int size = -10;
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0) {
+        ASSERT_ANY_THROW(std::vector<int> matrix(size, 0));
+    }
+}
+
+TEST(Sum_of_matrix_elements_MPI, Empty_matrix) {
+    int size = 0;
+    int rank;
+    std::vector<int> matrix(size, 0);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0) {
+        ASSERT_ANY_THROW(Work(size, matrix));
+    }
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     MPI_Init(&argc, &argv);

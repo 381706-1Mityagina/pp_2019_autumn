@@ -16,7 +16,7 @@ void testing_lab(int size) {
     }
     answer = Work(size, matrix);
     if (rank == 0) {
-      result = SumOfMatrixElementsPartly(matrix, 0);
+      result = SumOfMatrixElementsPartly(matrix);
     }
     ASSERT_EQ(result, answer);
 }

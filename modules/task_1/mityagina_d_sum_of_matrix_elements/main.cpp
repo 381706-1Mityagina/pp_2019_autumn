@@ -16,11 +16,29 @@ void testing_lab(int size) {
     }
     answer = Work(size, matrix);
     if (rank == 0) {
-        for (int i = 0; i < size; ++i) {
-            result += matrix[i];
-        }
-    ASSERT_EQ(result, answer);
+      result = SumOfMatrixElementsPartly(matrix, 0);
     }
+    ASSERT_EQ(result, answer);
+}
+
+TEST(Sum_of_matrix_elements_MPI, Test_On_Size_1) {
+    int size = 1;
+    testing_lab(size);
+}
+
+TEST(Sum_of_matrix_elements_MPI, Test_On_Size_2) {
+    int size = 2;
+    testing_lab(size);
+}
+
+TEST(Sum_of_matrix_elements_MPI, Test_On_Size_3) {
+    int size = 3;
+    testing_lab(size);
+}
+
+TEST(Sum_of_matrix_elements_MPI, Test_On_Size_9) {
+    int size = 9;
+    testing_lab(size);
 }
 
 TEST(Sum_of_matrix_elements_MPI, Test_On_Size_91) {

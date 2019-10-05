@@ -12,8 +12,8 @@ int Work(int size, std::vector<int> matrix);
 void FreeMem();
 
 // работа с отдельной частью, вычисление суммы
-int SumOfMatrixElementsPartly(std::vector<int> matrix, int size, int offset);
+int SumOfMatrixElementsPartly(std::vector<int> matrix, int offset);
 
-std::vector<int> getMatrix(const int size);
+std::vector<int> getMatrix(int size);
 
 #endif  // MODULES_TASK_1_MITYAGINA_D_SUM_OF_MATRIX_ELEMENTS_SUM_OF_MATRIX_ELEMENTS_H_

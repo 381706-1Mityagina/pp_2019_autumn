@@ -7,9 +7,6 @@
 #include <random>
 #include <stdexcept>
 
-#define MIN(a, b) (a > b)? b : a;
-#define MAX(a, b) (a < b)? b : a;
-
 int Work(int size, std::vector<int> matrix) {
   int sum_res = 0, part_sum;
   int rank, p_size;

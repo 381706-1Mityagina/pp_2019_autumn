@@ -29,7 +29,6 @@ int Work(int size, std::vector<int> matrix) {
     for (int proc = 1; proc < p_size; ++proc)
       MPI_Send(&error, 1, MPI_INT, proc, 5, MPI_COMM_WORLD);
   } else {
-    MPI_Status status;
     MPI_Recv(&error, 1, MPI_INT, 0, 5, MPI_COMM_WORLD, &status);
   }
   switch (error) {
@@ -38,13 +37,14 @@ int Work(int size, std::vector<int> matrix) {
   case 1:
     throw std::runtime_error("size <= 0");
   }
+  std::vector<int> recieved = std::vector<int>(calculate_part, 0);
+
   if (rank == 0) {
     if (calculate_part != 0) {
       for (int proc = 1; proc < p_size; proc++)
         MPI_Send(&matrix[dop] + proc * calculate_part, calculate_part, MPI_INT, proc, 0, MPI_COMM_WORLD);
     }
   }
-  std::vector<int> recieved = std::vector<int>(calculate_part, 0);
   if (rank == 0) {
     recieved = std::vector<int>(matrix.begin(), matrix.begin() + calculate_part + dop);
   } else if (calculate_part != 0) {

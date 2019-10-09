@@ -8,7 +8,7 @@
 #include <stdexcept>
 
 int Work(int size, std::vector<int> matrix) {
-  int sum_res = 0, part_sum;
+  int sum_res = 0;
   int rank, p_size;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &p_size);
@@ -43,14 +43,12 @@ int Work(int size, std::vector<int> matrix) {
     }
   }
   if (rank == 0) {
+    recieved.resize(calculate_part + dop);
     recieved = std::vector<int>(matrix.begin(), matrix.begin() + calculate_part + dop);
   } else if (calculate_part != 0) {
-    for (int proc = 1; proc < p_size; proc++) {
       MPI_Recv(&recieved[0], calculate_part, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
-    }
   }
-  part_sum = SumOfMatrixElementsPartly(recieved);
-
+  int part_sum = SumOfMatrixElementsPartly(recieved);
   MPI_Barrier(MPI_COMM_WORLD);
   if (calculate_part != 0)
     MPI_Reduce(&part_sum, &sum_res, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);

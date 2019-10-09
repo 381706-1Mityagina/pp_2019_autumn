@@ -6,10 +6,8 @@
 #include <stdio.h>
 #include <vector>
 
+// основная работа
 int Work(int size, std::vector<int> matrix);
-
-// используется в конце работы, освобождение памяти
-void FreeMem();
 
 // работа с отдельной частью, вычисление суммы
 int SumOfMatrixElementsPartly(std::vector<int> matrix);

@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <vector>
 
-typedef void (*union_func)(void *a, void *b, int);
+typedef void (*func)(void *a, void *b, int);
 
 void help_me_reduce(const int rank_in, 
 	const int np, 
@@ -14,7 +14,7 @@ void help_me_reduce(const int rank_in,
 	void *recvbuf, 
 	int cnt, 
 	MPI_Datatype datatype, 
-	union_func op, MPI_Comm comm);
+	func op, MPI_Comm comm);
 
 // основная работа
 void Reduce(
@@ -22,7 +22,7 @@ void Reduce(
 	void *where_to_send_to,
 	int how_much,
 	MPI_Datatype type,
-	union_func op,
+	func op,
 	int root,
 	MPI_Comm comm
 	); 

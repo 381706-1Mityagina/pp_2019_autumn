@@ -14,7 +14,7 @@ void help_me_reduce(
   void *recvbuf, 
   int cnt, 
   MPI_Datatype datatype, 
-  union_func op, // возможно стоит заменить на строку, и в зависимости от значения 
+  func op, // возможно стоит заменить на строку, и в зависимости от значения 
                  // (MPI_SUM, MPI_MAX, ..) производить к-л дейтвия с пришедшими данными
   MPI_Comm comm) 
 {
@@ -44,7 +44,7 @@ void Reduce(
 	void *where_to_send_to,
 	int how_much,
 	MPI_Datatype datatype,
-	union_func op,
+	func op,
 	int root,
 	MPI_Comm comm
 	) 

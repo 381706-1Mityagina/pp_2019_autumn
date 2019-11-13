@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <vector>
+#include <random>
 #include "../../../modules/task_2/mityagina_d_reduce/reduce.h"
 
 void test_add(int *a, int* b, int n) {
@@ -46,9 +47,11 @@ int iOfMatrixElementsPartly(std::vector<int> matrix) {
 }
 
 std::vector<int> getMatrix(int size) {
+  std::mt19937 gen;
+  gen.seed(static_cast<unsigned int>(time(0)));
   std::vector<int> new_matrix(size);
   for (int i = 0; i < size; ++i) {
-    new_matrix[i] = rand_r() % 100 + 1;
+    new_matrix[i] = gen() % 100;
   }
   return new_matrix;
 }

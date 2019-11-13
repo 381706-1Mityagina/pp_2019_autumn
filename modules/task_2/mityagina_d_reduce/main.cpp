@@ -3,22 +3,20 @@
 #include <gtest-mpi-listener.hpp>
 #include <gtest/gtest.h>
 #include <iostream>
+#include <vector>
 #include "../../../modules/task_2/mityagina_d_reduce/reduce.h"
 
-void test_add(int *a, int* b, int n)
-{
+void test_add(int *a, int* b, int n) {
     for (int i = 0; i < n; i++)
       b[i] += a[i];
 }
 
-void test_multiplication(int *a, int* b, int n)
-{
+void test_multiplication(int *a, int* b, int n) {
     for (int i = 0; i < n; i++)
      b[i] *= a[i];
 }
 
-void test_i(int *a, int* b, int n)
-{
+void test_i(int *a, int* b, int n) {
     for (int i = 0; i < n; i++)
         b[i] &= a[i];
 }
@@ -50,7 +48,7 @@ int iOfMatrixElementsPartly(std::vector<int> matrix) {
 std::vector<int> getMatrix(int size) {
   std::vector<int> new_matrix(size);
   for (int i = 0; i < size; ++i) {
-    new_matrix[i] = rand() % 100 + 1;
+    new_matrix[i] = rand_r() % 100 + 1;
   }
   return new_matrix;
 }
@@ -102,21 +100,21 @@ int Work(int size, std::vector<int> matrix, int choice) {
   }
   int part_sum = SumOfMatrixElementsPartly(recieved);
   if (calculate_part != 0) {
-    switch (choice){
+    switch (choice) {
       case 0 :
-      MPI_Reduce(&part_sum, &sum_res, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD); // Сумма
+      MPI_Reduce(&part_sum, &sum_res, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);  // Сумма
       break;
       case 1 :
       Reduce(&part_sum, &sum_res, 1, MPI_INT, (func)test_add, 0, MPI_COMM_WORLD);
       break;
       case 2 :
-      MPI_Reduce(&part_sum, &sum_res, 1, MPI_INT, MPI_PROD, 0, MPI_COMM_WORLD); // Произведение
+      MPI_Reduce(&part_sum, &sum_res, 1, MPI_INT, MPI_PROD, 0, MPI_COMM_WORLD);  // Произведение
       break;
       case 3 :
       Reduce(&part_sum, &sum_res, 1, MPI_INT, (func)test_multiplication, 0, MPI_COMM_WORLD);
       break;
       case 4 :
-      MPI_Reduce(&part_sum, &sum_res, 1, MPI_INT, MPI_BAND, 0, MPI_COMM_WORLD); // Побитовая операция И
+      MPI_Reduce(&part_sum, &sum_res, 1, MPI_INT, MPI_BAND, 0, MPI_COMM_WORLD);  // Побитовая операция И
       break;
       case 5 :
       Reduce(&part_sum, &sum_res, 1, MPI_INT, (func)test_i, 0, MPI_COMM_WORLD);
@@ -124,9 +122,9 @@ int Work(int size, std::vector<int> matrix, int choice) {
       default:
       break;
     }
-  }
-  else
+  } else {
     sum_res = part_sum;
+  }
 
   return sum_res;
 }

@@ -9,25 +9,19 @@
 void test_add(int *a, int* b, int n)
 {
     for (int i = 0; i < n; i++)
-        b[i] += a[i];
-}
-
-void test_subtraction(int *a, int* b, int n)
-{
-    for (int i = 0; i < n; i++)
-        b[i] -= a[i];
+      b[i] += a[i];
 }
 
 void test_multiplication(int *a, int* b, int n)
 {
     for (int i = 0; i < n; i++)
-        b[i] *= a[i];
+     b[i] *= a[i];
 }
 
-void test_division(int *a, int* b, int n)
+void test_i(int *a, int* b, int n)
 {
     for (int i = 0; i < n; i++)
-        b[i] /= a[i];
+        b[i] &= a[i];
 }
 
 int SumOfMatrixElementsPartly(std::vector<int> matrix) {
@@ -35,6 +29,22 @@ int SumOfMatrixElementsPartly(std::vector<int> matrix) {
   int size = matrix.size();
   for (int i = 0; i < size; i++)
     sum += matrix[i];
+  return sum;
+}
+
+int MultiplicationOfMatrixElementsPartly(std::vector<int> matrix) {
+  int sum = 0;
+  int size = matrix.size();
+  for (int i = 0; i < size; i++)
+    sum *= matrix[i];
+  return sum;
+}
+
+int iOfMatrixElementsPartly(std::vector<int> matrix) {
+  int sum = 0;
+  int size = matrix.size();
+  for (int i = 0; i < size; i++)
+    sum &= matrix[i];
   return sum;
 }
 
@@ -96,9 +106,28 @@ int Work(int size, std::vector<int> matrix, int choice) {
   //t1 = MPI_Wtime();
   int part_sum = SumOfMatrixElementsPartly(recieved);
   if (calculate_part != 0) {
-    if (choice == 0)
+    switch (choice){
+      case 0 :
       MPI_Reduce(&part_sum, &sum_res, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-    else Reduce(&part_sum, &sum_res, 1, MPI_INT, (func)test_add, 0, MPI_COMM_WORLD);
+      break;
+      case 1 :
+      Reduce(&part_sum, &sum_res, 1, MPI_INT, (func)test_add, 0, MPI_COMM_WORLD);
+      break;
+      case 2 :
+      MPI_Reduce(&part_sum, &sum_res, 1, MPI_INT, MPI_PROD, 0, MPI_COMM_WORLD);
+      break;
+      case 3 :
+      Reduce(&part_sum, &sum_res, 1, MPI_INT, (func)test_multiplication, 0, MPI_COMM_WORLD);
+      break;
+      case 4 :
+      MPI_Reduce(&part_sum, &sum_res, 1, MPI_INT, MPI_BAND, 0, MPI_COMM_WORLD);
+      break;
+      case 5 :
+      Reduce(&part_sum, &sum_res, 1, MPI_INT, (func)test_i, 0, MPI_COMM_WORLD);
+      break;
+      default:
+      break;
+    }
   }
   else
     sum_res = part_sum;
@@ -115,7 +144,7 @@ int Work(int size, std::vector<int> matrix, int choice) {
 }
 //---------------------------------------------------------------------------------
 
-void testing_lab(int size) {
+void testing_lab_1(int size) {
     int answer0, answer1;
     int rank;
     std::vector<int> matrix(size, 0);
@@ -130,34 +159,111 @@ void testing_lab(int size) {
     }
 }
 
-TEST(Reduce_MPI, Test_On_Size_1) {
+void testing_lab_2(int size) {
+    int answer0, answer1;
+    int rank;
+    std::vector<int> matrix(size, 0);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0) {
+        matrix = getMatrix(size);
+    }
+    answer0 = Work(size, matrix, 2);
+    answer1 = Work(size, matrix, 3);
+    if (rank == 0) {
+      ASSERT_EQ(answer0, answer1);
+    }
+}
+
+void testing_lab_3(int size) {
+    int answer0, answer1;
+    int rank;
+    std::vector<int> matrix(size, 0);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0) {
+        matrix = getMatrix(size);
+    }
+    answer0 = Work(size, matrix, 4);
+    answer1 = Work(size, matrix, 5);
+    if (rank == 0) {
+      ASSERT_EQ(answer0, answer1);
+    }
+}
+
+TEST(Reduce_MPI, Test1_On_Size_1) {
     int size = 1;
-    testing_lab(size);
+    testing_lab_1(size);
 }
 
-TEST(Reduce_MPI, Test_On_Size_3) {
+TEST(Reduce_MPI, Test1_On_Size_3) {
     int size = 3;
-    testing_lab(size);
+    testing_lab_1(size);
 }
 
-TEST(Reduce_MPI, Test_On_Size_100) {
+TEST(Reduce_MPI, Test1_On_Size_100) {
     int size = 100;
-    testing_lab(size);
+    testing_lab_1(size);
 }
 
-TEST(Reduce_MPI, Test_On_Size_1000) {
+TEST(Reduce_MPI, Test1_On_Size_1000) {
     int size = 1000;
-    testing_lab(size);
+    testing_lab_1(size);
 }
 
-TEST(Reduce_MPI, Test_On_Size_10000) {
+TEST(Reduce_MPI, Test1_On_Size_10000) {
     int size = 10000;
-    testing_lab(size);
+    testing_lab_1(size);
 }
 
+TEST(Reduce_MPI, Test2_On_Size_1) {
+    int size = 1;
+    testing_lab_2(size);
+}
 
-// + тесты на отсылку/получение вектора и т.д
-// + тесты на double
+TEST(Reduce_MPI, Test2_On_Size_3) {
+    int size = 3;
+    testing_lab_2(size);
+}
+
+TEST(Reduce_MPI, Test2_On_Size_100) {
+    int size = 100;
+    testing_lab_2(size);
+}
+
+TEST(Reduce_MPI, Test2_On_Size_1000) {
+    int size = 1000;
+    testing_lab_2(size);
+}
+
+TEST(Reduce_MPI, Test2_On_Size_10000) {
+    int size = 10000;
+    testing_lab_2(size);
+}
+
+TEST(Reduce_MPI, Test3_On_Size_1) {
+    int size = 1;
+    testing_lab_3(size);
+}
+
+TEST(Reduce_MPI, Test3_On_Size_3) {
+    int size = 3;
+    testing_lab_3(size);
+}
+
+TEST(Reduce_MPI, Test3_On_Size_100) {
+    int size = 100;
+    testing_lab_3(size);
+}
+
+TEST(Reduce_MPI, Test3_On_Size_1000) {
+    int size = 1000;
+    testing_lab_3(size);
+}
+
+TEST(Reduce_MPI, Test3_On_Size_10000) {
+    int size = 10000;
+    testing_lab_3(size);
+}
+
 // + комментарии добавить
 // + отладить 
 

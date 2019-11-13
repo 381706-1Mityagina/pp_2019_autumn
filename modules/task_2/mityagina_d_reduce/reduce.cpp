@@ -22,11 +22,11 @@ void Reduce(
   MPI_Comm_size(MPI_COMM_WORLD, &num_of_proc);
 
   int rank = rank_came, num = num_of_proc;
-  int is_it_odd = 0, type_size, step = 1;
+  int ost = 0, type_size, step = 1;
 
   while (num > 1) {
     if(rank < num) {
-      is_it_odd = num % 2;
+      ost = num % 2;
       if(rank % 2 != 0) {
         MPI_Send(where_to_send_from, how_much, datatype, (rank - 1) * step, 19, comm);
         rank *= num;
@@ -41,7 +41,7 @@ void Reduce(
       }
       step *= 2;
     }
-    num = num / 2 + is_it_odd;
+    num = num / 2 + ost;
   }
   if(rank_came == 0) {
     MPI_Type_size(datatype, &type_size);

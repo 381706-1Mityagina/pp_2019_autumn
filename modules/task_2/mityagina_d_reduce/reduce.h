@@ -19,4 +19,3 @@ void Reduce(
 	); 
 
 #endif  // MODULES_TASK_2_MITYAGINA_D_REDUCE_H_
-

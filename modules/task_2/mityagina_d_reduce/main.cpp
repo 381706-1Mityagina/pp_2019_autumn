@@ -51,8 +51,7 @@ int iOfMatrixElementsPartly(std::vector<int> matrix) {
 std::vector<int> getMatrix(int size) {
   std::vector<int> new_matrix(size);
   for (int i = 0; i < size; ++i) {
-    //new_matrix[i] = gen() % 100;
-    new_matrix[i] = -2;
+    new_matrix[i] = rand() % 100 + 1;
   }
   return new_matrix;
 }
@@ -88,7 +87,6 @@ int Work(int size, std::vector<int> matrix, int choice) {
   case 1:
     throw std::runtime_error("size <= 0");
   }
-  //double t1, t2, dt;
   std::vector<int> recieved = std::vector<int>(calculate_part, 0);
 
   if (rank == 0) {
@@ -103,7 +101,6 @@ int Work(int size, std::vector<int> matrix, int choice) {
   } else if (calculate_part != 0) {
       MPI_Recv(&recieved[0], calculate_part, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
   }
-  //t1 = MPI_Wtime();
   int part_sum = SumOfMatrixElementsPartly(recieved);
   if (calculate_part != 0) {
     switch (choice){
@@ -131,14 +128,6 @@ int Work(int size, std::vector<int> matrix, int choice) {
   }
   else
     sum_res = part_sum;
-
-  /*t2 = MPI_Wtime();
-  dt = t2 - t1;
-  if (rank == 0 && count == 0)
-  {
-    std::cout << "Time = " << dt << "\n";
-    count++;
-  }*/
 
   return sum_res;
 }

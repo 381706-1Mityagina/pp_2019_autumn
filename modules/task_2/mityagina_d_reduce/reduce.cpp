@@ -1,6 +1,7 @@
 // Copyright 2019 Mityagina Daria
 #include "../../../modules/task_2/mityagina_d_reduce/reduce.h"
 #include <math.h>
+#include <stdio.h>
 #include <ctime>
 #include <random>
 #include <algorithm>

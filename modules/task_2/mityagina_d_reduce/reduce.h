@@ -8,16 +8,16 @@
 
 typedef void (*func)(void *a, void *b, int);
 
-void help_me_reduce(const int rank_in, 
-	const int np, 
+int help_me_reduce(int rank_came, 
+	int num_of_proc, 
 	void *sendbuf, 
 	void *recvbuf, 
-	int cnt, 
+	int how_much, 
 	MPI_Datatype datatype, 
 	func op, MPI_Comm comm);
 
 // основная работа
-void Reduce(
+int Reduce(
 	void *where_to_send_from,
 	void *where_to_send_to,
 	int how_much,

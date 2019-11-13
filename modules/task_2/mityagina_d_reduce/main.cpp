@@ -39,8 +39,6 @@ int SumOfMatrixElementsPartly(std::vector<int> matrix) {
 }
 
 std::vector<int> getMatrix(int size) {
-  //std::mt19937 gen;
-  //gen.seed(static_cast<unsigned int>(time(0)));
   std::vector<int> new_matrix(size);
   for (int i = 0; i < size; ++i) {
     //new_matrix[i] = gen() % 100;
@@ -51,7 +49,7 @@ std::vector<int> getMatrix(int size) {
 
 int Work(int size, std::vector<int> matrix, int choice) {
   int sum_res = 0;
-  int rank, p_size;//, count = 0;
+  int rank, p_size;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &p_size);
   const int calculate_part = size / p_size;
@@ -100,7 +98,7 @@ int Work(int size, std::vector<int> matrix, int choice) {
   if (calculate_part != 0) {
     if (choice == 0)
       MPI_Reduce(&part_sum, &sum_res, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-    else Reduce(&part_sum, &sum_res, 1, MPI_INT, (union_func)test_add, 0, MPI_COMM_WORLD);
+    else Reduce(&part_sum, &sum_res, 1, MPI_INT, (func)test_add, 0, MPI_COMM_WORLD);
   }
   else
     sum_res = part_sum;
@@ -127,8 +125,9 @@ void testing_lab(int size) {
     }
     answer0 = Work(size, matrix, 0);
     answer1 = Work(size, matrix, 1);
-
-    ASSERT_EQ(answer0, answer1);
+    if (rank == 0) {
+      ASSERT_EQ(answer0, answer1);
+    }
 }
 
 TEST(Reduce_MPI, Test_On_Size_1) {

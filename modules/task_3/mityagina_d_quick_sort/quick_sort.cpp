@@ -8,42 +8,23 @@
 #include <algorithm>
 #include <stdexcept>
 
-std::vector<int> getRandomVector(int vectorSize) {
-    // std::mt19937 gen;
-    // gen.seed((unsigned)time(0) + ++offset);
-    std::vector<int> vec(vectorSize);
-    for (int i = 0; i < vectorSize; ++i)
-        vec[i] = rand() % 100;
-    return vec;
+std::vector<int> getRandomVector(int size) {
+  std::mt19937 gen;
+  gen.seed(static_cast<unsigned int>(time(0)));
+  std::vector<int> _vector(size);
+  for (int i = 0; i < size; ++i) {
+    _vector[i] = gen() % 100;
+  }
+  return _vector;
 }
-
-// void division(std::vector<int> _vector, int left, int right, int &t){
-//  int x = _vector[left];
-//  int tmp = 0;
-//  t = left;
-//  for(int i = left + 1; i <= right; i++) {
-//   if(_vector[i] < x) {
-//    t++;
-//    tmp = _vector[t];
-//    _vector[t] = _vector[i];
-//    _vector[i] = tmp;
-//   }
-//  }
-//  tmp = _vector[left];
-//  _vector[left] = _vector[t];
-//  _vector[t] = tmp;
-// }
 
 std::vector<int> q_sort_parallel(std::vector<int> _vector) {
   int size = _vector.size();
-  int p_size = 0, rank = 0, error;
+  int p_size = 0, rank = 0, error, q, part_size = 0, taken;
   MPI_Status status;
 
   MPI_Comm_size(MPI_COMM_WORLD, &p_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-  const int calculate_part = size / p_size;
-  const int dop = size % p_size;
 
   if (rank == 0) {
     if (size <= 0) {
@@ -65,76 +46,48 @@ std::vector<int> q_sort_parallel(std::vector<int> _vector) {
 
   std::vector<int> part = _vector;
 
-  // int plength = 0;
-  // int lproc = size - 1;
-  // int fproc = rank;
-  
-  // if(rank != 0) {
-  //   MPI_Recv(&plength, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-  //   part.resize(plength);
-  //   if (plength > 0)
-  //     MPI_Recv(&part[0], plength, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-  //   MPI_Recv(&lproc, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-  // }
-  // //else {
-  //   int m;
-  //   int l = 0;
-  //   int r = plength - 1;
-  //   int x = fproc + (lproc - fproc + 1) / 2;
-  //   int y = lproc;
-  //   int pos;
-  //   int count;
+  if (p_size > 1 && _vector.size() / p_size > 0) {
+    if (rank == 0) {
+      q = partition (part, 0, _vector.size());
+      part_size = part.size() - q;
+      if (part_size > 0) {
+        MPI_Send(&_vector, part_size, MPI_INT, rank + 1, rank + 1, MPI_COMM_WORLD);
+        MPI_Send(&part_size, 1, MPI_INT, rank + 1, (rank + 1) * 10, MPI_COMM_WORLD);
+        MPI_Send(&taken, 1, MPI_INT, rank + 1, (rank + 1) * 100, MPI_COMM_WORLD);
+      }
+    } else {
+      MPI_Recv(&taken, 1, MPI_INT, status.MPI_SOURCE, (status.MPI_SOURCE + 1) * 100, MPI_COMM_WORLD, &status);
+      MPI_Recv(&part_size, 1, MPI_INT, status.MPI_SOURCE, (status.MPI_SOURCE + 1) * 10, MPI_COMM_WORLD, &status);
+      taken += part_size;
+      part.resize(part_size);
+      if (part_size > 0)
+        MPI_Recv(&part, part_size, MPI_INT, status.MPI_SOURCE, (status.MPI_SOURCE + 1), MPI_COMM_WORLD, &status);
 
-  //   while (x > fproc) {
-  //     division(part, l, r, m);
-  //     pos = 0;
-  //     count = 0;
-  //     if (m - l + 1 <= r - m) {
-  //       pos = l;
-  //       count = m - l + 1;
-  //       l = m + 1;
-  //     } else {
-  //       pos = m + 1;
-  //       count = r - m;
-  //       r = m;
-  //     }
-  //     if (count > 0) {
-  //       MPI_Send(&count, 1, MPI_INT, x, 0, MPI_COMM_WORLD);
-  //       MPI_Send(&_vector[0] + pos, count, MPI_INT, x, 0, MPI_COMM_WORLD);
-  //     }
-  //     MPI_Send(&y, 1, MPI_INT, x, 0, MPI_COMM_WORLD);
-
-  //     y = x - 1;
-  //     x = fproc + (y - fproc + 1) / 2;
-  //   }
-    // if (rank != 0) {
-    //   MPI_Send(&part[0], count, MPI_INT, 0, 10, MPI_COMM_WORLD);
-    // } else {
-    //   if (size > 1)
-    //     MPI_Recv(&_vector[0] + pos, plength, MPI_INT, MPI_ANY_SOURCE, 10, MPI_COMM_WORLD, &status);
-    // }
-
-  std::vector<int> recieved = std::vector<int>(calculate_part, 0);
-
-  if (rank == 0) {
-    if (calculate_part != 0) {
-      for (int proc = 1; proc < p_size; proc++)
-        MPI_Send(&_vector[dop] + proc * calculate_part, calculate_part, MPI_INT, proc, 0, MPI_COMM_WORLD);
+      if (rank < p_size - 1) {
+        q = partition (part, 0, part.size()); 
+        part_size = part.size() - q;
+        if (part_size > 0) {
+          MPI_Send(&part, part_size, MPI_INT, rank + 1, rank + 1, MPI_COMM_WORLD);
+          MPI_Send(&part_size, 1, MPI_INT, rank + 1, (rank + 1) * 10, MPI_COMM_WORLD);
+          MPI_Send(&taken, 1, MPI_INT, rank + 1, (rank + 1) * 100, MPI_COMM_WORLD);
+        }
+      }
     }
   }
-  if (rank == 0) {
-    recieved.resize(calculate_part + dop);
-    recieved = std::vector<int>(_vector.begin(), _vector.begin() + calculate_part + dop);
-  } else if (calculate_part != 0) {
-      MPI_Recv(&recieved[0], calculate_part, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
+
+  if (p_size == 1) {
+    _vector = part;
   }
-  recieved = q_sort_not_parallel(recieved, 0, recieved.size() - 1);
+
   if (p_size > 1) {
-    if (rank == 0)
-    {
-      MPI_Recv(&_vector[0] + calculate_part * (rank + 1) + dop, calculate_part, MPI_INT, MPI_ANY_SOURCE, 10, MPI_COMM_WORLD, &status);
+    part = q_sort_not_parallel(part, 0, part.size() - 1);
+    // слияние :
+    if (rank == 0) {
+      if (part_size >= 0)
+        MPI_Recv(&_vector + taken, part_size, MPI_INT, MPI_ANY_SOURCE, 13, MPI_COMM_WORLD, &status);
     } else {
-      MPI_Send(&recieved[0], calculate_part, MPI_INT, 0, 10, MPI_COMM_WORLD);
+      if (part_size >= 0)
+        MPI_Send(&part[0], part_size, MPI_INT, 0, 13, MPI_COMM_WORLD);
     }
   }
 
@@ -165,7 +118,7 @@ int partition (std::vector<int> _vector, int p, int r) {
 std::vector<int> q_sort_not_parallel(std::vector<int> _vector, int p, int r) {
   int q;
   std::vector<int> _vector_res(_vector);  
-  if (p < r)    {
+  if (p < r) {
     q = partition (_vector_res, p, r);
     q_sort_not_parallel (_vector_res, p, q - 1);
     q_sort_not_parallel (_vector_res, q + 1, r);

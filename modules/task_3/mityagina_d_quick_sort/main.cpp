@@ -35,7 +35,7 @@ void testing_lab(int size) {
     }
 }
 
-// TEST(Quick_Sort_MPI, Test_On_Size_1) {
+TEST(Quick_Sort_MPI, Test_On_Size_1) {
     int size = 1;
     testing_lab(size);
 }

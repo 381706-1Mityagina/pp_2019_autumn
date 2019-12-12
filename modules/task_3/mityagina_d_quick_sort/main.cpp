@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <vector>
 #include <random>
-#include "quick_sort_p.h"
+#include "../quick_sort_p.h"
 
 TEST(Quick_Sort_MPI, Empty_matrix) {
     int size = 0;

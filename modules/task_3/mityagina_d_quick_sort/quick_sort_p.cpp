@@ -21,7 +21,7 @@ std::vector<int> getRandomVector(int size) {
   return _vector;
 }
 
-void part(std::vector<int> &_vector, int left, int right, int &t) {
+void part(const std::vector<int> &_vector, int left, int right, const int &t) {
   int x = _vector[left];
   int tmp = 0;
   t = left;
@@ -38,7 +38,7 @@ void part(std::vector<int> &_vector, int left, int right, int &t) {
   _vector[t] = tmp;
 }
 
-void quick_s(std::vector<int> &_vector, int left, int right) {
+void quick_s(const std::vector<int> &_vector, int left, int right) {
   if (left < right) {
     int t = 0;
     part(_vector, left, right, t);
@@ -47,27 +47,27 @@ void quick_s(std::vector<int> &_vector, int left, int right) {
   }
 }
 
-std::vector<int> Merge_my_vectors(std::vector<int> &my_vector1, std::vector<int> &my_vector2, int m, int n) {
+std::vector<int> Merge_my_vectors(const std::vector<int> &mv1, const std::vector<int> &mv2, int m, int n) {
   int i = 0, j = 0, k = 0;
   std::vector<int> result = std::vector<int>(m + n);
   while (i < m && j < n) {
-    if (my_vector1[i] <= my_vector2[j]) {
-      result[k] = my_vector1[i];
+    if (mv1[i] <= mv2[j]) {
+      result[k] = mv1[i];
       i++;
     } else {
-      result[k] = my_vector2[j];
+      result[k] = mv2[j];
       j++;
     }
     k++;
   }
   if (i < m) {
     for (int p = i; p < m; p++) {
-      result[k] = my_vector1[p];
+      result[k] = mv1[p];
       k++;
     }
   } else {
     for (int p = j; p < n; p++) {
-      result[k] = my_vector2[p];
+      result[k] = mv2[p];
       k++;
     }
   }
@@ -78,11 +78,11 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
   int rank, size, error;
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  int eachProcSize = (size > 1) ? (N / size) : N;
+  int eachProc = (size > 1) ? (N / size) : N;
   int additional = N % size;
   MPI_Status st;
   std::vector<int> sub_my_vector;
-  std::vector<int> result_my_vector = std::vector<int>(my_vector);
+  std::vector<int> result = std::vector<int>(my_vector);
 
   if (rank == 0) {
     if (N <= 0) {
@@ -102,47 +102,47 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
             throw std::runtime_error("size <= 0");
   }
   if (size > 1 && N / size > 0) {
-    std::vector<std::vector<int>> new_my_vector = std::vector<std::vector<int>>(size - 1, std::vector<int>(eachProcSize, 0));
+    std::vector<std::vector<int>> new_vec = std::vector<std::vector<int>>(size - 1, std::vector<int>(eachProc, 0));
     if (rank == 0) {
-      sub_my_vector = std::vector<int>(eachProcSize + additional, 0);
+      sub_my_vector = std::vector<int>(eachProc + additional, 0);
     } else if (rank > 0) {
-      sub_my_vector = std::vector<int>(eachProcSize, 0);
+      sub_my_vector = std::vector<int>(eachProc, 0);
     }
     if (rank == 0) {
       for (int i = 1; i < size; i++) {
-        if (eachProcSize * i + additional <= N - eachProcSize)
-        MPI_Send(&my_vector[additional] + eachProcSize * i, eachProcSize, MPI_INT, i, i, MPI_COMM_WORLD);
+        if (eachProc * i + additional <= N - eachProc)
+        MPI_Send(&my_vector[additional] + eachProc * i, eachProc, MPI_INT, i, i, MPI_COMM_WORLD);
       }
     }
     if (rank == 0) {
-      sub_my_vector.resize(eachProcSize + additional);
-      sub_my_vector = std::vector<int>(my_vector.begin(), my_vector.begin() + eachProcSize + additional);
+      sub_my_vector.resize(eachProc + additional);
+      sub_my_vector = std::vector<int>(my_vector.begin(), my_vector.begin() + eachProc + additional);
     } else {
-      MPI_Recv(&sub_my_vector[0], eachProcSize, MPI_INT, 0, rank, MPI_COMM_WORLD, &st);
+      MPI_Recv(&sub_my_vector[0], eachProc, MPI_INT, 0, rank, MPI_COMM_WORLD, &st);
     }
-    int right = (rank == 0)? eachProcSize + additional - 1 : eachProcSize - 1;
+    int right = (rank == 0)? eachProc + additional - 1 : eachProc - 1;
     quick_s(sub_my_vector, 0, right);
-    for (int i = 0; i < eachProcSize + additional; i++) {
-      result_my_vector[i] = sub_my_vector[i];
+    for (int i = 0; i < eachProc + additional; i++) {
+      result[i] = sub_my_vector[i];
     }
     if (rank != 0) {
-      MPI_Send(&sub_my_vector[0], eachProcSize, MPI_INT, 0, rank * 10, MPI_COMM_WORLD);
+      MPI_Send(&sub_my_vector[0], eachProc, MPI_INT, 0, rank * 10, MPI_COMM_WORLD);
     } else {
       for (int i = 1; i < size; i++) {
-        MPI_Recv(&result_my_vector[additional] + eachProcSize * i, eachProcSize, MPI_INT, MPI_ANY_SOURCE, i * 10, MPI_COMM_WORLD, &st);
+        MPI_Recv(&result[additional] + eachProc * i, eachProc, MPI_INT, MPI_ANY_SOURCE, i * 10, MPI_COMM_WORLD, &st);
       }
     }
 
     if (rank != 0) {
-      MPI_Send(&sub_my_vector, eachProcSize, MPI_INT, 0, rank, MPI_COMM_WORLD);
+      MPI_Send(&sub_my_vector, eachProc, MPI_INT, 0, rank, MPI_COMM_WORLD);
     } else {
-      new_my_vector[0] = std::vector<int>(sub_my_vector.begin(), sub_my_vector.begin() + eachProcSize + additional);
+      new_vec[0] = std::vector<int>(sub_my_vector.begin(), sub_my_vector.begin() + eachProc + additional);
       for (int i = 1; i < size; i++) {
-        MPI_Recv(&new_my_vector[i - 1], eachProcSize, MPI_INT, i, i, MPI_COMM_WORLD, &st);
+        MPI_Recv(&new_vec[i - 1], eachProc, MPI_INT, i, i, MPI_COMM_WORLD, &st);
       }
     }
-    sort(result_my_vector.begin(), result_my_vector.end());
-    return result_my_vector;
+    sort(result.begin(), result.end());
+    return result;
   } else {
     quick_s(my_vector, 0, N - 1);
     return my_vector;

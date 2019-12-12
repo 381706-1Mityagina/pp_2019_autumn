@@ -1,5 +1,5 @@
 // Copyright 2019 Mityagina Daria
-#include "quick_sort_p.h"
+#include "../../../modules/task_3/mityagina_d_quick_sort/quick_sort_p.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>

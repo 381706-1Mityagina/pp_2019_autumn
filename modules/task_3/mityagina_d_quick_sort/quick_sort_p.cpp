@@ -1,0 +1,150 @@
+// Copyright 2019 Mityagina Daria
+#include "quick_sort_p.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <cstring>
+#include <ctime>
+#include <random>
+#include <vector>
+#include <algorithm>
+#include <stdexcept>
+#include <iostream>
+
+std::vector<int> getRandomVector(int size) {
+  std::mt19937 gen;
+  gen.seed(static_cast<unsigned int>(time(0)));
+  std::vector<int> _vector(size);
+  for (int i = 0; i < size; ++i) {
+    _vector[i] = gen() % 100;
+  }
+  return _vector;
+}
+
+void part(std::vector<int> &_vector, int left, int right, int &t) {
+  int x = _vector[left];
+  int tmp = 0;
+  t = left;
+  for (int i = left + 1; i <= right; i++) {
+    if (_vector[i] < x) {
+      t++;
+      tmp = _vector[t];
+     _vector[t] = _vector[i];
+     _vector[i] = tmp;
+    }
+  }
+  tmp = _vector[left];
+  _vector[left] = _vector[t];
+  _vector[t] = tmp;
+}
+
+void quick_s(std::vector<int> &_vector, int left, int right) {
+  if (left < right) {
+    int t = 0;
+    part(_vector, left, right, t);
+    quick_s(_vector, left, t);
+    quick_s(_vector, t + 1, right);
+  }
+}
+
+std::vector<int> Merge_my_vectors(std::vector<int> &my_vector1, std::vector<int> &my_vector2, int m, int n) {
+  int i = 0, j = 0, k = 0;
+  std::vector<int> result = std::vector<int>(m + n);
+  while (i < m && j < n) {
+    if (my_vector1[i] <= my_vector2[j]) {
+      result[k] = my_vector1[i];
+      i++;
+    } else {
+      result[k] = my_vector2[j];
+      j++;
+    }
+    k++;
+  }
+  if (i < m) {
+    for (int p = i; p < m; p++) {
+      result[k] = my_vector1[p];
+      k++;
+    }
+  } else {
+    for (int p = j; p < n; p++) {
+      result[k] = my_vector2[p];
+      k++;
+    }
+  }
+  return result;
+}
+
+std::vector<int> main_work(std::vector<int> my_vector, int N) {
+  int rank, size, error;
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  int eachProcSize = (size > 1) ? (N / size) : N;
+  int additional = N % size;
+  MPI_Status st;
+  std::vector<int> sub_my_vector;
+  std::vector<int> result_my_vector = std::vector<int>(my_vector);
+
+  if (rank == 0) {
+    if (N <= 0) {
+      error = 1;
+    } else {
+      error = 0;
+    }
+    for (int proc = 1; proc < size; ++proc)
+        MPI_Send(&error, 1, MPI_INT, proc, 100, MPI_COMM_WORLD);
+    } else {
+        MPI_Recv(&error, 1, MPI_INT, 0, 100, MPI_COMM_WORLD, &st);
+    }
+    switch (error) {
+        case 0:
+            break;
+        case 1:
+            throw std::runtime_error("size <= 0");
+  }
+  if (size > 1 && N / size > 0) {
+    std::vector<std::vector<int>> new_my_vector = std::vector<std::vector<int>>(size - 1, std::vector<int>(eachProcSize, 0));
+    if (rank == 0) {
+      sub_my_vector = std::vector<int>(eachProcSize + additional, 0);
+    } else if (rank > 0) {
+      sub_my_vector = std::vector<int>(eachProcSize, 0);
+    }
+    if (rank == 0) {
+      for (int i = 1; i < size; i++) {
+        if (eachProcSize * i + additional <= N - eachProcSize)
+        MPI_Send(&my_vector[additional] + eachProcSize * i, eachProcSize, MPI_INT, i, i, MPI_COMM_WORLD);
+      }
+    }
+    if (rank == 0) {
+      sub_my_vector.resize(eachProcSize + additional);
+      sub_my_vector = std::vector<int>(my_vector.begin(), my_vector.begin() + eachProcSize + additional);
+    } else {
+      MPI_Recv(&sub_my_vector[0], eachProcSize, MPI_INT, 0, rank, MPI_COMM_WORLD, &st);
+    }
+    int right = (rank == 0)? eachProcSize + additional - 1 : eachProcSize - 1;
+    quick_s(sub_my_vector, 0, right);
+    for (int i = 0; i < eachProcSize + additional; i++) {
+      result_my_vector[i] = sub_my_vector[i];
+    }
+    if (rank != 0) {
+      MPI_Send(&sub_my_vector[0], eachProcSize, MPI_INT, 0, rank * 10, MPI_COMM_WORLD);
+    } else {
+      for (int i = 1; i < size; i++) {
+        MPI_Recv(&result_my_vector[additional] + eachProcSize * i, eachProcSize, MPI_INT, MPI_ANY_SOURCE, i * 10, MPI_COMM_WORLD, &st);
+      }
+    }
+
+    if (rank != 0) {
+      MPI_Send(&sub_my_vector, eachProcSize, MPI_INT, 0, rank, MPI_COMM_WORLD);
+    } else {
+      new_my_vector[0] = std::vector<int>(sub_my_vector.begin(), sub_my_vector.begin() + eachProcSize + additional);
+      for (int i = 1; i < size; i++) {
+        MPI_Recv(&new_my_vector[i - 1], eachProcSize, MPI_INT, i, i, MPI_COMM_WORLD, &st);
+      }
+    }
+    sort(result_my_vector.begin(), result_my_vector.end());
+    return result_my_vector;
+  } else {
+    quick_s(my_vector, 0, N - 1);
+    return my_vector;
+  }
+}

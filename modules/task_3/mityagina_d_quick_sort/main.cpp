@@ -36,34 +36,34 @@ void testing_lab(int size) {
 }
 
 // TEST(Quick_Sort_MPI, Test_On_Size_1) {
-//     int size = 1;
-//     testing_lab(size);
-// }
+    int size = 1;
+    testing_lab(size);
+}
 
-// TEST(Quick_Sort_MPI, Test_On_Size_5) {
-//     int size = 5;
-//     testing_lab(size);
-// }
+TEST(Quick_Sort_MPI, Test_On_Size_5) {
+    int size = 5;
+    testing_lab(size);
+}
 
-// TEST(Quick_Sort_MPI, Test_On_Size_7) {
-//     int size = 7;
-//     testing_lab(size);
-// }
+TEST(Quick_Sort_MPI, Test_On_Size_7) {
+    int size = 7;
+    testing_lab(size);
+}
 
-// TEST(Quick_Sort_MPI, Test_On_Size_9) {
-//     int size = 9;
-//     testing_lab(size);
-// }
+TEST(Quick_Sort_MPI, Test_On_Size_9) {
+    int size = 9;
+    testing_lab(size);
+}
 
-// TEST(Quick_Sort_MPI, Test_On_Size_91) {
-//     int size = 91;
-//     testing_lab(size);
-// }
+TEST(Quick_Sort_MPI, Test_On_Size_91) {
+    int size = 91;
+    testing_lab(size);
+}
 
-// TEST(Quick_Sort_MPI, Test_On_Size_200) {
-//     int size = 200;
-//     testing_lab(size);
-// }
+TEST(Quick_Sort_MPI, Test_On_Size_200) {
+    int size = 200;
+    testing_lab(size);
+}
 
 TEST(Quick_Sort_MPI, Test_On_Size_1000) {
     int size = 1000;

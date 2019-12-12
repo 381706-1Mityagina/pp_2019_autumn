@@ -21,30 +21,47 @@ std::vector<int> getRandomVector(int size) {
   return _vector;
 }
 
-void part(const std::vector<int> &_vector, int left, int right, const int &t) {
-  int x = _vector[left];
-  int tmp = 0;
-  t = left;
-  for (int i = left + 1; i <= right; i++) {
-    if (_vector[i] < x) {
-      t++;
-      tmp = _vector[t];
-     _vector[t] = _vector[i];
-     _vector[i] = tmp;
-    }
-  }
-  tmp = _vector[left];
-  _vector[left] = _vector[t];
-  _vector[t] = tmp;
-}
+// int part(const std::vector<int> &_vector, int left, int right) {
+//   int x = _vector[left];
+//   int tmp = 0;
+//   t = left;
+//   for (int i = left + 1; i <= right; i++) {
+//     if (_vector[i] < x) {
+//       t++;
+//       tmp = _vector[t];
+//      *_vector[t] = _vector[i];
+//      _vector[i] = tmp;
+//     }
+//   }
+//   tmp = _vector[left];
+//   _vector[left] = _vector[t];
+//   _vector[t] = tmp;
 
-void quick_s(const std::vector<int> &_vector, int left, int right) {
+//   return t;
+// }
+
+std::vector<int> quick_s(std::vector<int> _vector, int left, int right) {
   if (left < right) {
-    int t = 0;
-    part(_vector, left, right, t);
+    // int t = part(_vector, left, right);
+    int x = _vector[left];
+    int tmp = 0;
+    int t = left;
+    for (int i = left + 1; i <= right; i++) {
+      if (_vector[i] < x) {
+        t++;
+        tmp = _vector[t];
+       _vector[t] = _vector[i];
+       _vector[i] = tmp;
+      }
+    }
+    tmp = _vector[left];
+    _vector[left] = _vector[t];
+    _vector[t] = tmp;
+
     quick_s(_vector, left, t);
     quick_s(_vector, t + 1, right);
   }
+  return _vector;
 }
 
 std::vector<int> Merge_my_vectors(const std::vector<int> &mv1, const std::vector<int> &mv2, int m, int n) {
@@ -121,7 +138,7 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
       MPI_Recv(&sub_my_vector[0], eachProc, MPI_INT, 0, rank, MPI_COMM_WORLD, &st);
     }
     int right = (rank == 0)? eachProc + additional - 1 : eachProc - 1;
-    quick_s(sub_my_vector, 0, right);
+    sub_my_vector = quick_s(sub_my_vector, 0, right);
     for (int i = 0; i < eachProc + additional; i++) {
       result[i] = sub_my_vector[i];
     }
@@ -144,7 +161,7 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
     sort(result.begin(), result.end());
     return result;
   } else {
-    quick_s(my_vector, 0, N - 1);
+    my_vector = quick_s(my_vector, 0, N - 1);
     return my_vector;
   }
 }

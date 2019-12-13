@@ -9,7 +9,7 @@
 
 void testing_lab(int size) {
     int rank;
-    double t1, t2;
+    // double t1, t2;
     std::vector<int> _vector(size), result_my(size), result(size), copy(size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -22,7 +22,8 @@ void testing_lab(int size) {
     if (rank == 0) {
       // std::cout << "Parallel " << t2 - t1 << "\n";
       // t1 = MPI_Wtime();
-      quick_s(_vector, 0, size - 1);
+      // quick_s(_vector, 0, size - 1);
+      sort(_vector.begin(), _vector.end());
       // t2 = MPI_Wtime();
       // std::cout << "Not parallel " << t2 - t1 << "\n";
       result_my = _vector;

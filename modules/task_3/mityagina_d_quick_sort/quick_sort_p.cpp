@@ -11,6 +11,8 @@
 #include <stdexcept>
 #include <iostream>
 
+std::vector<int> part_vect(std::vector<int> _vector, int left, int right);
+
 std::vector<int> getRandomVector(int size) {
   std::mt19937 gen;
   gen.seed(static_cast<unsigned int>(time(0)));
@@ -21,34 +23,17 @@ std::vector<int> getRandomVector(int size) {
   return _vector;
 }
 
-int part(std::vector<int> &_vector, int left, int right) {
-  int x = _vector[left];
-  int tmp = 0;
-  int t = left;
-  for (int i = left + 1; i <= right; i++) {
-    if (_vector[i] < x) {
-      t++;
-      tmp = _vector[t];
-     _vector[t] = _vector[i];
-     _vector[i] = tmp;
-    }
-  }
-  tmp = _vector[left];
-  _vector[left] = _vector[t];
-  _vector[t] = tmp;
-
-  return t;
-}
-
-void quick_s(std::vector<int> &_vector, int left, int right) {
+std::vector<int> quick_s(std::vector<int> _vector, int left, int right) {
   if (left < right) {
     int t = part(_vector, left, right);
-    quick_s(_vector, left, t);
-    quick_s(_vector, t + 1, right);
+    _vector = std::vector<int>(part_vect(_vector, left, right));
+    _vector = quick_s(_vector, left, t);
+    _vector = quick_s(_vector, t + 1, right);
   }
+  return _vector;
 }
 
-std::vector<int> Merge_my_vectors(std::vector<int> &mv1, std::vector<int> &mv2, int m, int n) {
+std::vector<int> Merge_my_vectors(std::vector<int> mv1, std::vector<int> mv2, int m, int n) {
   int i = 0, j = 0, k = 0;
   std::vector<int> result = std::vector<int>(m + n);
   while (i < m && j < n) {
@@ -135,10 +120,49 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
         MPI_Recv(&result[additional] + eachProc * i, eachProc, MPI_INT, MPI_ANY_SOURCE, i * 10, MPI_COMM_WORLD, &st);
       }
     }
-    quick_s(result, 0, N - 1);
-    return result;
+    std::vector<int> out(N, 0);
+    out = std::vector<int>(quick_s(result, 0, N - 1));
+    return out;
   } else {
-    quick_s(my_vector, 0, N - 1);
-    return my_vector;
+    std::vector<int> out(N, 0);
+    out = std::vector<int>(quick_s(result, 0, N - 1));
+    return out;
   }
+}
+
+std::vector<int> part_vect(std::vector<int> _vector, int left, int right) {
+  int x = _vector[left];
+  int tmp = 0;
+  int t = left;
+  for (int i = left + 1; i <= right; i++) {
+    if (_vector[i] < x) {
+      t++;
+      tmp = _vector[t];
+     _vector[t] = _vector[i];
+     _vector[i] = tmp;
+    }
+  }
+  tmp = _vector[left];
+  _vector[left] = _vector[t];
+  _vector[t] = tmp;
+  return _vector;
+}
+
+int part(std::vector<int> _vector, int left, int right) {
+  int x = _vector[left];
+  int tmp = 0;
+  int t = left;
+  for (int i = left + 1; i <= right; i++) {
+    if (_vector[i] < x) {
+      t++;
+      tmp = _vector[t];
+     _vector[t] = _vector[i];
+     _vector[i] = tmp;
+    }
+  }
+  tmp = _vector[left];
+  _vector[left] = _vector[t];
+  _vector[t] = tmp;
+
+  return t;
 }

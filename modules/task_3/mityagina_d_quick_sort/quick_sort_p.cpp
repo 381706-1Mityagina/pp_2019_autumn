@@ -68,9 +68,9 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
   int eachProc = (size > 1) ? (N / size) : N;
   int additional = N % size;
   MPI_Status st;
-  std::vector<int> sub_my_vector;
-  std::vector<int> result = std::vector<int>(my_vector.begin(), my_vector.end());
-
+  std::vector<int> sub_my_vector = std::vector<int>(eachProc, 0);
+  std::vector<int> result = std::vector<int>(N, 0);
+  result = std::vector<int>(my_vector.begin(), my_vector.end());
   if (rank == 0) {
     if (N <= 0) {
       error = 1;
@@ -97,7 +97,7 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
     if (rank == 0) {
       for (int i = 1; i < size; i++) {
         if (eachProc * i + additional <= N - eachProc)
-          MPI_Send(&my_vector[additional] + eachProc * i, eachProc, MPI_INT, i, i, MPI_COMM_WORLD);
+          MPI_Send(&my_vector[additional] + eachProc * i - 1, eachProc, MPI_INT, i, i, MPI_COMM_WORLD);
       }
     }
     if (rank == 0) {
@@ -117,7 +117,7 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
       MPI_Send(&sub_my_vector[0], eachProc, MPI_INT, 0, rank * 10, MPI_COMM_WORLD);
     } else {
       for (int i = 1; i < size; i++) {
-        MPI_Recv(&result[additional] + eachProc * i, eachProc, MPI_INT, MPI_ANY_SOURCE, i * 10, MPI_COMM_WORLD, &st);
+        MPI_Recv(&result[additional] + eachProc * i - 1, eachProc, MPI_INT, MPI_ANY_SOURCE, i * 10, MPI_COMM_WORLD, &st);
       }
     }
     std::vector<int> out(N, 0);
@@ -163,6 +163,5 @@ int part(std::vector<int> _vector, int left, int right) {
   tmp = _vector[left];
   _vector[left] = _vector[t];
   _vector[t] = tmp;
-
   return t;
 }

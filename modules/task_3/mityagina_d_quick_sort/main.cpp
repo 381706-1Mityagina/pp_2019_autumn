@@ -7,27 +7,24 @@
 #include <random>
 #include "../../../modules/task_3/mityagina_d_quick_sort/quick_sort_p.h"
 
-TEST(Quick_Sort_MPI, Empty_matrix) {
-    int size = 0;
-    int rank;
-    std::vector<int> _vector(size, 0);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    if (rank == 0) {
-        ASSERT_ANY_THROW(main_work(_vector, size));
-    }
-}
-
 void testing_lab(int size) {
     int rank;
+    double t1, t2;
     std::vector<int> _vector(size), result_my(size), result(size), copy(size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if (rank == 0) {
         _vector = getRandomVector(size);
     }
+    // t1 = MPI_Wtime();
     result = main_work(_vector, size);
+    // t2 = MPI_Wtime();
     if (rank == 0) {
-      sort(_vector.begin(), _vector.end());
+      // std::cout << "Parallel " << t2 - t1 << "\n";
+      // t1 = MPI_Wtime();
+      quick_s(_vector, 0, size - 1);
+      // t2 = MPI_Wtime();
+      // std::cout << "Not parallel " << t2 - t1 << "\n";
       result_my = _vector;
     }
     if (rank == 0) {

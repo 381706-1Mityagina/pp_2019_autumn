@@ -66,7 +66,7 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int eachProc = (size > 1) ? (N / size) : N;
-  int additional = N % size;
+  int add = N % size;
   MPI_Status st;
   std::vector<int> sub_my_vector = std::vector<int>(eachProc, 0);
   std::vector<int> result = std::vector<int>(N, 0);
@@ -90,34 +90,34 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
   }
   if (size > 1 && N / size > 0) {
     if (rank == 0) {
-      sub_my_vector = std::vector<int>(eachProc + additional, 0);
+      sub_my_vector = std::vector<int>(eachProc + add, 0);
     } else if (rank > 0) {
       sub_my_vector = std::vector<int>(eachProc, 0);
     }
     if (rank == 0) {
       for (int i = 1; i < size; i++) {
-        if (eachProc * i + additional <= N - eachProc)
-          MPI_Send(&my_vector[additional] + eachProc * i - 1, eachProc, MPI_INT, i, i, MPI_COMM_WORLD);
+        if (eachProc * i + add <= N - eachProc)
+          MPI_Send(&my_vector[add] + eachProc * i - 1, eachProc, MPI_INT, i, i, MPI_COMM_WORLD);
       }
     }
     if (rank == 0) {
-      sub_my_vector.resize(eachProc + additional);
-      sub_my_vector = std::vector<int>(my_vector.begin(), my_vector.begin() + eachProc + additional);
+      sub_my_vector.resize(eachProc + add);
+      sub_my_vector = std::vector<int>(my_vector.begin(), my_vector.begin() + eachProc + add);
     } else {
       sub_my_vector.resize(eachProc);
-      if (eachProc * rank + additional <= N - eachProc)
+      if (eachProc * rank + add <= N - eachProc)
         MPI_Recv(&sub_my_vector[0], eachProc, MPI_INT, 0, rank, MPI_COMM_WORLD, &st);
     }
-    int right = (rank == 0)? eachProc + additional - 1 : eachProc - 1;
+    int right = (rank == 0)? eachProc + add - 1 : eachProc - 1;
     quick_s(sub_my_vector, 0, right);
-    for (int i = 0; i < eachProc + additional; i++) {
+    for (int i = 0; i < eachProc + add; i++) {
       result[i] = sub_my_vector[i];
     }
     if (rank != 0) {
       MPI_Send(&sub_my_vector[0], eachProc, MPI_INT, 0, rank * 10, MPI_COMM_WORLD);
     } else {
       for (int i = 1; i < size; i++) {
-        MPI_Recv(&result[additional] + eachProc * i - 1, eachProc, MPI_INT, MPI_ANY_SOURCE, i * 10, MPI_COMM_WORLD, &st);
+        MPI_Recv(&result[add] + eachProc * i - 1, eachProc, MPI_INT, MPI_ANY_SOURCE, i * 10, MPI_COMM_WORLD, &st);
       }
     }
     std::vector<int> out(N, 0);

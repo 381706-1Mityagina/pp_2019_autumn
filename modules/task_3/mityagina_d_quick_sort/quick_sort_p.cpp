@@ -88,12 +88,8 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
       case 1:
           throw std::runtime_error("size <= 0");
   }
+
   if (size > 1 && N / size > 0) {
-    if (rank == 0) {
-      sub_my_vector = std::vector<int>(eachProc + add, 0);
-    } else if (rank > 0) {
-      sub_my_vector = std::vector<int>(eachProc, 0);
-    }
     if (rank == 0) {
       for (int i = 1; i < size; i++) {
         if (eachProc * i + add <= N - eachProc)
@@ -108,8 +104,10 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
       if (eachProc * rank + add <= N - eachProc)
         MPI_Recv(&sub_my_vector[0], eachProc, MPI_INT, 0, rank, MPI_COMM_WORLD, &st);
     }
+
     int right = (rank == 0)? eachProc + add - 1 : eachProc - 1;
     quick_s(sub_my_vector, 0, right);
+
     for (int i = 0; i < eachProc + add; i++) {
       result[i] = sub_my_vector[i];
     }

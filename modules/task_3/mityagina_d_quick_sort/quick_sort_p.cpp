@@ -67,23 +67,27 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
   int eachProc = (size > 1) ? (N / size) : N;
   int add = N % size;
   MPI_Status st;
-  std::vector<int> sub_my_vector = std::vector<int>(eachProc, 0);
+  std::vector<int> sub_my_vector;
+  if (eachProc > 0)
+    sub_my_vector = std::vector<int>(eachProc, 0);
   std::vector<int> result = std::vector<int>(N, 0);
   result = std::vector<int>(my_vector.begin(), my_vector.end());
 
   if (size > 1 && N / size > 0) {
     if (rank == 0) {
       for (int i = 1; i < size; i++) {
-        if (eachProc * i + add <= N - eachProc)
+        if (eachProc * i + add <= N - eachProc && eachProc > 0)
           MPI_Send(&my_vector[add] + eachProc * i - 1, eachProc, MPI_INT, i, i, MPI_COMM_WORLD);
       }
     }
     if (rank == 0) {
-      sub_my_vector.resize(eachProc + add);
+      if (eachProc + add > 0)
+        sub_my_vector.resize(eachProc + add);
       sub_my_vector = std::vector<int>(my_vector.begin(), my_vector.begin() + eachProc + add);
     } else {
-      sub_my_vector.resize(eachProc);
-      if (eachProc * rank + add <= N - eachProc)
+      if ( eachProc > 0)
+        sub_my_vector.resize(eachProc);
+      if (eachProc * rank + add <= N - eachProc && eachProc > 0)
         MPI_Recv(&sub_my_vector[0], eachProc, MPI_INT, 0, rank, MPI_COMM_WORLD, &st);
     }
 
@@ -94,10 +98,12 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
       result[i] = sub_my_vector[i];
     }
     if (rank != 0) {
-      MPI_Send(&sub_my_vector[0], eachProc, MPI_INT, 0, rank * 10, MPI_COMM_WORLD);
+      if (eachProc > 0)
+        MPI_Send(&sub_my_vector[0], eachProc, MPI_INT, 0, rank * 10, MPI_COMM_WORLD);
     } else {
       for (int i = 1; i < size; i++) {
-        MPI_Recv(&result[add] + eachProc * i - 1, eachProc, MPI_INT, MPI_ANY_SOURCE, i * 10, MPI_COMM_WORLD, &st);
+        if (eachProc > 0)
+          MPI_Recv(&result[add] + eachProc * i - 1, eachProc, MPI_INT, MPI_ANY_SOURCE, i * 10, MPI_COMM_WORLD, &st);
       }
     }
     std::vector<int> out(N, 0);

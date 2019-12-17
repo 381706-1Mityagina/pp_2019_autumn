@@ -62,7 +62,6 @@ std::vector<int> Merge_my_vectors(std::vector<int> mv1, std::vector<int> mv2, in
 
 std::vector<int> main_work(std::vector<int> my_vector, int N) {
   int rank, size;
-  int error;
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int eachProc = (size > 1) ? (N / size) : N;
@@ -71,24 +70,6 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
   std::vector<int> sub_my_vector = std::vector<int>(eachProc, 0);
   std::vector<int> result = std::vector<int>(N, 0);
   result = std::vector<int>(my_vector.begin(), my_vector.end());
-  my_vector.resize(N + N / 10);
-  if (rank == 0) {
-    if (N <= 0) {
-      error = 1;
-    } else {
-      error = 0;
-    }
-    for (int proc = 1; proc < size; ++proc)
-        MPI_Send(&error, 1, MPI_INT, proc, 100, MPI_COMM_WORLD);
-  } else {
-      MPI_Recv(&error, 1, MPI_INT, 0, 100, MPI_COMM_WORLD, &st);
-  }
-  switch (error) {
-      case 0:
-          break;
-      case 1:
-          throw std::runtime_error("size <= 0");
-  }
 
   if (size > 1 && N / size > 0) {
     if (rank == 0) {

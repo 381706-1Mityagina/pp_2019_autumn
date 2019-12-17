@@ -85,10 +85,10 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
         sub_my_vector.resize(eachProc + add);
       sub_my_vector = std::vector<int>(my_vector.begin(), my_vector.begin() + eachProc + add);
     } else {
-      if ( eachProc > 0)
-        sub_my_vector.resize(eachProc);
-      if (eachProc * rank + add <= N - eachProc && eachProc > 0)
-        MPI_Recv(&sub_my_vector[0], eachProc, MPI_INT, 0, rank, MPI_COMM_WORLD, &st);
+        if (eachProc > 0 && eachProc < N) {
+          sub_my_vector.resize(eachProc);
+          MPI_Recv(&sub_my_vector[0], eachProc, MPI_INT, 0, rank, MPI_COMM_WORLD, &st);
+        }
     }
 
     int right = (rank == 0)? eachProc + add - 1 : eachProc - 1;
@@ -102,7 +102,7 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
         MPI_Send(&sub_my_vector[0], eachProc, MPI_INT, 0, rank * 10, MPI_COMM_WORLD);
     } else {
       for (int i = 1; i < size; i++) {
-        if (eachProc > 0)
+        if (eachProc > 0 && add + eachProc * i - 1 <= N - eachProc)
           MPI_Recv(&result[add] + eachProc * i - 1, eachProc, MPI_INT, MPI_ANY_SOURCE, i * 10, MPI_COMM_WORLD, &st);
       }
     }

@@ -71,6 +71,7 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
   std::vector<int> sub_my_vector = std::vector<int>(eachProc, 0);
   std::vector<int> result = std::vector<int>(N, 0);
   result = std::vector<int>(my_vector.begin(), my_vector.end());
+  my_vector.resize(N + N / 10);
   if (rank == 0) {
     if (N <= 0) {
       error = 1;

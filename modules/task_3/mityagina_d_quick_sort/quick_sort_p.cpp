@@ -68,8 +68,9 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
   int add = N % size;
   MPI_Status st;
   std::vector<int> sub_my_vector;
-  if (each > 0)
+  if (each > 0) {
     sub_my_vector = std::vector<int>(each, 0);
+  }
   std::vector<int> result = std::vector<int>(N, 0);
   result = std::vector<int>(my_vector.begin(), my_vector.end());
 
@@ -82,8 +83,9 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
       }
     }
     if (rank == 0) {
-      if (add > 0)
+      if (add > 0) {
         sub_my_vector.resize(each + add);
+      }
       sub_my_vector = std::vector<int>(my_vector.begin(), my_vector.begin() + each + add);
     } else {
         if (each > 0 && each < N) {
@@ -98,10 +100,9 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
     for (int i = 0; i < each + add; i++) {
       result[i] = sub_my_vector[i];
     }
-    if (rank != 0)
+    if (rank != 0) {
       MPI_Gather(&sub_my_vector[0], each, MPI_INT, &result[add - 1] + rank * each, each, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Barrier(MPI_COMM_WORLD);
-
+    }
     std::vector<int> out = std::vector<int>(N, 0);
     if (rank == 0) {
       out = quick_s(result, 0, N - 1);

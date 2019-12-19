@@ -106,11 +106,8 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
           MPI_Recv(&result[add] + eachProc * i - 1, eachProc, MPI_INT, MPI_ANY_SOURCE, i * 10, MPI_COMM_WORLD, &st);
       }
     }
-    // MPI_Gather(&sub_my_vector[0], eachProc, MPI_INT, &result[add] + eachProc * rank, eachProc, MPI_INT, 0, MPI_COMM_WORLD);
-    // MPI_Barrier(MPI_COMM_WORLD);
     std::vector<int> out = std::vector<int>(N, 0);
-    if (rank == 0)
-    {
+    if (rank == 0) {
       out = quick_s(result, 0, N - 1);
     }
     return out;

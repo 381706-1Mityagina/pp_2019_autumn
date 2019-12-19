@@ -67,7 +67,7 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
   int each = (N / size);
   int add = N % size;
   MPI_Status st;
-  std::vector<int> sub_my_vector;
+  std::vector<int> sub_my_vector = std::vector<int>(each, 0);
   if (each > 0) {
     sub_my_vector = std::vector<int>(each, 0);
   }
@@ -94,7 +94,8 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
         }
     }
 
-    int right = (rank == 0)? each + add - 1 : each - 1;
+    int right;
+    right = (rank == 0) ? each + add - 1 : each - 1;
     quick_s(sub_my_vector, 0, right);
 
     for (int i = 0; i < each + add; i++) {

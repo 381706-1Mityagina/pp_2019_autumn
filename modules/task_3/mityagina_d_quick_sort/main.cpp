@@ -39,22 +39,22 @@ TEST(Quick_Sort_MPI, Test_On_Size_1) {
 }
 
 TEST(Quick_Sort_MPI, Test_On_Size_5) {
-    int size = 5;
+    int size = 6;
     testing_lab(size);
 }
 
 TEST(Quick_Sort_MPI, Test_On_Size_7) {
-    int size = 7;
+    int size = 8;
     testing_lab(size);
 }
 
 TEST(Quick_Sort_MPI, Test_On_Size_9) {
-    int size = 9;
+    int size = 90;
     testing_lab(size);
 }
 
 TEST(Quick_Sort_MPI, Test_On_Size_91) {
-    int size = 91;
+    int size = 900;
     testing_lab(size);
 }
 
@@ -95,5 +95,4 @@ int main(int argc, char **argv) {
 
     listeners.Append(new GTestMPIListener::MPIMinimalistPrinter);
     return RUN_ALL_TESTS();
-    MPI_Finalize();
 }

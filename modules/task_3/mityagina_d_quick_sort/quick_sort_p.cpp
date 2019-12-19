@@ -72,16 +72,18 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
     sub_my_vector = std::vector<int>(eachProc, 0);
   std::vector<int> result = std::vector<int>(N, 0);
   result = std::vector<int>(my_vector.begin(), my_vector.end());
+  // result = std::vector<int>(N, 0);
 
   if (size > 1 && N / size > 0) {
     if (rank == 0) {
       for (int i = 1; i < size; i++) {
-        if (eachProc * i + add <= N - eachProc && eachProc > 0)
-          MPI_Send(&my_vector[add] + eachProc * i - 1, eachProc, MPI_INT, i, i, MPI_COMM_WORLD);
+        if (eachProc * i + add <= N - eachProc && eachProc > 0) {
+          MPI_Send(&my_vector[add - 1] + eachProc * i, eachProc, MPI_INT, i, i, MPI_COMM_WORLD);
+        }
       }
     }
     if (rank == 0) {
-      if (eachProc + add > 0)
+      if (add > 0)
         sub_my_vector.resize(eachProc + add);
       sub_my_vector = std::vector<int>(my_vector.begin(), my_vector.begin() + eachProc + add);
     } else {
@@ -97,18 +99,30 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
     for (int i = 0; i < eachProc + add; i++) {
       result[i] = sub_my_vector[i];
     }
-    if (rank != 0) {
-      if (eachProc > 0)
-        MPI_Send(&sub_my_vector[0], eachProc, MPI_INT, 0, rank * 10, MPI_COMM_WORLD);
-    } else {
-      for (int i = 1; i < size; i++) {
-        if (eachProc > 0 && add + eachProc * i - 1 <= N - eachProc)
-          MPI_Recv(&result[add] + eachProc * i - 1, eachProc, MPI_INT, MPI_ANY_SOURCE, i * 10, MPI_COMM_WORLD, &st);
-      }
-    }
+
+    // if (rank != 0) {
+    //   if (eachProc > 0)
+    //     MPI_Send(&sub_my_vector[0], eachProc, MPI_INT, 0, rank * 10, MPI_COMM_WORLD);
+    // } else {
+    //   for (int i = 1; i < size; i++) {
+    //     if (eachProc > 0 && add + eachProc * i - 1 <= N - eachProc)
+    //       MPI_Recv(&result[add] + eachProc * i - 1, eachProc, MPI_INT, MPI_ANY_SOURCE, i * 10, MPI_COMM_WORLD, &st);
+    //   }
+    // }
+    // int length_needed;
+    // if (rank == 0)
+    //   length_needed = add + eachProc;
+    // else
+    //   length_needed = eachProc;
+    if (rank != 0)
+      MPI_Gather(&sub_my_vector[0], eachProc, MPI_INT, &result[add - 1] + rank * eachProc, eachProc, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD);
+
     std::vector<int> out = std::vector<int>(N, 0);
     if (rank == 0) {
       out = quick_s(result, 0, N - 1);
+      // sort(result.begin(), result.end());
+      // out = result;
     }
     return out;
   } else {

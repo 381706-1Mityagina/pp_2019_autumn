@@ -8,29 +8,36 @@
 #include "../../../modules/task_3/mityagina_d_quick_sort/quick_sort_p.h"
 
 void testing_lab(int size) {
-    int rank;
-    // double t1, t2;
-    std::vector<int> _vector(size), result_my(size), result(size), copy(size);
+    int rank, p_size;
+    double t1, t2;
+    std::vector<int> _vector(size), result_my(size), result(size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &p_size);
     if (rank == 0) {
         _vector = getRandomVector(size);
     }
-    // t1 = MPI_Wtime();
-    result = main_work(_vector, size);
-    // t2 = MPI_Wtime();
+    t1 = MPI_Wtime();
+    result = std::vector<int>(main_work(_vector, size));
+    t2 = MPI_Wtime();
     if (rank == 0) {
-      // std::cout << "Parallel " << t2 - t1 << "\n";
-      // t1 = MPI_Wtime();
+      if (p_size > 1)
+        std::cout << "Parallel " << t2 - t1 << "\n";
+      t1 = MPI_Wtime();
       quick_s(_vector, 0, size - 1);
+      t2 = MPI_Wtime();
       sort(_vector.begin(), _vector.end());
-      // t2 = MPI_Wtime();
-      // std::cout << "Not parallel " << t2 - t1 << "\n";
-      result_my = _vector;
+      if (p_size == 1)
+        std::cout << "Not parallel " << t2 - t1 << "\n";
+      result_my = std::vector<int>(_vector);
     }
     if (rank == 0) {
         ASSERT_EQ(result, result_my);
     }
+}
+
+TEST(Quick_Sort_MPI, Test_On_Size_10000) {
+    int size = 10000;
+    testing_lab(size);
 }
 
 TEST(Quick_Sort_MPI, Test_On_Size_1) {
@@ -65,11 +72,6 @@ TEST(Quick_Sort_MPI, Test_On_Size_200) {
 
 TEST(Quick_Sort_MPI, Test_On_Size_1000) {
     int size = 1000;
-    testing_lab(size);
-}
-
-TEST(Quick_Sort_MPI, Test_On_Size_2000) {
-    int size = 2000;
     testing_lab(size);
 }
 

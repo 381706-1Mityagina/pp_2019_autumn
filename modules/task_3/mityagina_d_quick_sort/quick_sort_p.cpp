@@ -62,7 +62,7 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
   int rank, size;
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  int eachProc = (N / size);
+  int eachProc = (N / size > 0)? (N / size) : N;
   int add = N % size;
   MPI_Status st;
   std::vector<int> sub_my_vector;

@@ -90,10 +90,12 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
     }
 
     int right = (rank == 0)? eachProc + add - 1 : eachProc - 1;
+    // int right = sub_my_vector.size() - 1;
     quick_s(sub_my_vector, 0, right);
-
-    for (int i = 0; i < eachProc + add; i++) {
-      result[i] = sub_my_vector[i];
+    if (rank == 0) {
+      for (int i = 0; i < eachProc + add; i++) {
+        result[i] = sub_my_vector[i];
+      }
     }
     if (rank != 0) {
       if (eachProc > 0)

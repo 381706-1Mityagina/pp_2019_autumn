@@ -11,8 +11,6 @@
 #include <stdexcept>
 #include <iostream>
 
-std::vector<int> part_vect(std::vector<int> _vector, int left, int right);
-
 std::vector<int> getRandomVector(int size) {
   std::mt19937 gen;
   gen.seed(static_cast<unsigned int>(time(0)));
@@ -26,7 +24,7 @@ std::vector<int> getRandomVector(int size) {
 std::vector<int> quick_s(std::vector<int> _vector, int left, int right) {
   if (left < right) {
     int t = part(_vector, left, right);
-    _vector = std::vector<int>(part_vect(_vector, left, right));
+    _vector = part_vect(_vector, left, right);
     _vector = quick_s(_vector, left, t);
     _vector = quick_s(_vector, t + 1, right);
   }
@@ -35,7 +33,7 @@ std::vector<int> quick_s(std::vector<int> _vector, int left, int right) {
 
 std::vector<int> Merge_my_vectors(std::vector<int> mv1, std::vector<int> mv2, int m, int n) {
   int i = 0, j = 0, k = 0;
-  std::vector<int> result = std::vector<int>(m + n);
+  std::vector<int> result = std::vector<int>(m + n, 0);
   while (i < m && j < n) {
     if (mv1[i] <= mv2[j]) {
       result[k] = mv1[i];
@@ -64,7 +62,7 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
   int rank, size;
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  int eachProc = (N / size);
+  int eachProc = (N / size > 0)? (N / size) : N;
   int add = N % size;
   MPI_Status st;
   std::vector<int> sub_my_vector;
@@ -90,12 +88,12 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
           MPI_Recv(&sub_my_vector[0], eachProc, MPI_INT, 0, rank, MPI_COMM_WORLD, &st);
         }
     }
-
     int right = (rank == 0)? eachProc + add - 1 : eachProc - 1;
     quick_s(sub_my_vector, 0, right);
-
-    for (int i = 0; i < eachProc + add; i++) {
-      result[i] = sub_my_vector[i];
+    if (rank == 0) {
+      for (int i = 0; i < eachProc + add; i++) {
+        result[i] = sub_my_vector[i];
+      }
     }
     if (rank != 0) {
       if (eachProc > 0)
@@ -106,12 +104,13 @@ std::vector<int> main_work(std::vector<int> my_vector, int N) {
           MPI_Recv(&result[add] + eachProc * i - 1, eachProc, MPI_INT, MPI_ANY_SOURCE, i * 10, MPI_COMM_WORLD, &st);
       }
     }
-    std::vector<int> out(N, 0);
-    out = std::vector<int>(quick_s(result, 0, N - 1));
+    std::vector<int> out = std::vector<int>(N, 0);
+    sort(result.begin(), result.end());
+    out = result;
     return out;
   } else {
-    std::vector<int> out(N, 0);
-    out = std::vector<int>(quick_s(result, 0, N - 1));
+    std::vector<int> out = std::vector<int>(N, 0);
+    out = quick_s(result, 0, N - 1);
     return out;
   }
 }

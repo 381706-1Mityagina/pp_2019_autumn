@@ -1,5 +1,4 @@
 // Copyright 2019 Mityagina Daria
-#include <mpi.h>
 #include <gtest-mpi-listener.hpp>
 #include <gtest/gtest.h>
 #include <iostream>

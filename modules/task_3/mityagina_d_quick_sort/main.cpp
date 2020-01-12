@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <vector>
 #include <random>
-#include "../../../modules/task_3/another_way_of_third_lab_implementation/quick_sort_p.h"
+#include "../../../modules/task_3/mityagina_d_quick_sort/quick_sort_p.h"
 
 void testing_lab(int size) {
   int rank, p_size;

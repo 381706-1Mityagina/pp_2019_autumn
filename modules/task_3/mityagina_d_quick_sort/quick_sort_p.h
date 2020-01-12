@@ -1,6 +1,6 @@
 // Copyright 2019-2020 Mityagina Daria
-#ifndef MODULES_TASK_3_ANOTHER_WAY_OF_THIRD_LAB_IMPLEMENTATION_QUICK_SORT_P_H_
-#define MODULES_TASK_3_ANOTHER_WAY_OF_THIRD_LAB_IMPLEMENTATION_QUICK_SORT_P_H_
+#ifndef MODULES_TASK_3_MITYAGINA_D_QUICK_SORT_QUICK_SORT_P_H_
+#define MODULES_TASK_3_MITYAGINA_D_QUICK_SORT_QUICK_SORT_P_H_
 #include <mpi.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -13,4 +13,4 @@ void quickSort(std::vector<int> *array, int start, int end);
 void quickSort(std::vector<int> *array, int size);
 void main_work(std::vector<int> *A, int size);
 
-#endif  // MODULES_TASK_3_ANOTHER_WAY_OF_THIRD_LAB_IMPLEMENTATION_QUICK_SORT_P_H_
+#endif  // MODULES_TASK_3_MITYAGINA_D_QUICK_SORT_QUICK_SORT_P_H_

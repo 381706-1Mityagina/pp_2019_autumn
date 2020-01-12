@@ -21,16 +21,16 @@ std::vector<int> getRandomVector(int size) {
   return _vector;
 }
 
-void merge(std::vector<int> array1, std::vector<int> array2, std::vector<int> *merged_array, int size) {
+void merge(std::vector<int> array1, std::vector<int> array2, std::vector<int> *merged, int size) {
   int i = 0, j = 0, m = 0;
   while (i < size / 2 && j < size / 2) {
-    (*merged_array)[m++] = array1[i] < array2[j] ? array1[i++] : array2[j++];
+    (*merged)[m++] = array1[i] < array2[j] ? array1[i++] : array2[j++];
   }
   while (i < size / 2) {
-    (*merged_array)[m++] = array1[i++];
+    (*merged)[m++] = array1[i++];
   }
   while (j < size / 2) {
-    (*merged_array)[m++] = array2[j++];
+    (*merged)[m++] = array2[j++];
   }
 }
 
@@ -80,8 +80,8 @@ void main_work(std::vector<int> *A, int size) {
     int merged_size;
     int local_size = size / comm_sz;  // so we can assume size % comm_sz == 0
     std::vector<int> local_A = std::vector<int>(local_size, 0);
-    std::vector<int> current_array = std::vector<int>(local_size, 0);
-    std::vector<int> merged_array = std::vector<int>(local_size, 0);
+    std::vector<int> current = std::vector<int>(local_size, 0);
+    std::vector<int> merged = std::vector<int>(local_size, 0);
 
     MPI_Scatter(&(*A)[0], local_size, MPI_INT, &local_A[0], local_size, MPI_INT, 0, MPI_COMM_WORLD);
     quickSort(&local_A, 0, local_size - 1);
@@ -95,23 +95,23 @@ void main_work(std::vector<int> *A, int size) {
     int my_index = my_rank;
     int step = 0;
 
-    current_array = std::vector<int>(local_A.begin(), local_A.end());
+    current = std::vector<int>(local_A.begin(), local_A.end());
     while (step < merge_tree_depth) {
       merged_size = (local_size) * static_cast<int>(pow(2, step + 1));  // depth of merge tree
       if (my_index % 2 == 0) {
-        merged_array.resize(merged_size);
+        merged.resize(merged_size);
         std::vector<int> recv_array = std::vector<int>(merged_size/2, 0);
         int src_rank = my_rank + static_cast<int>(pow(2, step));
         if (merged_size/2 > 0 && src_rank < comm_sz && src_rank >= 0) {
           MPI_Recv(&recv_array[0], merged_size/2, MPI_INT, src_rank, 10, MPI_COMM_WORLD, &status);
         }
-        merge(current_array, recv_array, &merged_array, merged_size);
-        current_array.resize(merged_size);
-        current_array = merged_array;
+        merge(current, recv_array, &merged, merged_size);
+        current.resize(merged_size);
+        current = merged;
       } else {
         int des_rank = my_rank - static_cast<int>(pow(2, step));
         if (merged_size/2 > 0 && des_rank < comm_sz && des_rank >= 0) {
-          MPI_Send(&current_array[0], merged_size/2, MPI_INT, des_rank, 10, MPI_COMM_WORLD);
+          MPI_Send(&current[0], merged_size/2, MPI_INT, des_rank, 10, MPI_COMM_WORLD);
         }
         break;
       }
@@ -120,7 +120,7 @@ void main_work(std::vector<int> *A, int size) {
     }
     if (my_rank == 0) {
       for (int i = 0; i < size; i++) {
-        (*A)[i] = merged_array[i + (static_cast<int>(merged_array.size()) - size)];
+        (*A)[i] = merged[i + (static_cast<int>(merged.size()) - size)];
       }
     }
   } else {

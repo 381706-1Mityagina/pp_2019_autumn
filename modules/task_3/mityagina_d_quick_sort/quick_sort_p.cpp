@@ -1,5 +1,5 @@
 // Copyright 2019-2020 Mityagina Daria
-#include "../../../modules/task_3/another_way_of_third_lab_implementation/quick_sort_p.h"
+#include "../../../modules/task_3/mityagina_d_quick_sort/quick_sort_p.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -22,33 +22,33 @@ std::vector<int> getRandomVector(int size) {
 }
 
 void merge(std::vector<int> array1, std::vector<int> array2, std::vector<int> *merged_array, int size) {
-  int i = 0, j = 0, k = 0;
+  int i = 0, j = 0, m = 0;
   while (i < size / 2 && j < size / 2) {
-    (*merged_array)[k++] = array1[i] < array2[j] ? array1[i++] : array2[j++];
+    (*merged_array)[m++] = array1[i] < array2[j] ? array1[i++] : array2[j++];
   }
   while (i < size / 2) {
-    (*merged_array)[k++] = array1[i++];
+    (*merged_array)[m++] = array1[i++];
   }
   while (j < size / 2) {
-    (*merged_array)[k++] = array2[j++];
+    (*merged_array)[m++] = array2[j++];
   }
 }
 
 int partition(std::vector<int> *array, int start, int end) {
   int pivot = (*array)[end];
-  int smallerCount = start;
+  int count = start;
   for (int j = start; j < end; j++) {
     if ((*array)[j] <= pivot) {
       int temp = (*array)[j];
-      (*array)[j] = (*array)[smallerCount];
-      (*array)[smallerCount] = temp;
-      smallerCount += 1;
+      (*array)[j] = (*array)[count];
+      (*array)[count] = temp;
+      count += 1;
     }
   }
-  (*array)[end] = (*array)[smallerCount];
-  (*array)[smallerCount] = pivot;
+  (*array)[end] = (*array)[count];
+  (*array)[count] = pivot;
 
-  return smallerCount;
+  return count;
 }
 /*
   call partition to divide array into two parts
@@ -56,9 +56,9 @@ int partition(std::vector<int> *array, int start, int end) {
 */
 void quickSort(std::vector<int> *array, int start, int end) {
   if (start < end) {
-    int pivotLoc = partition(array, start, end);
-    quickSort(array, start, pivotLoc - 1);
-    quickSort(array, pivotLoc + 1, end);
+    int pivot = partition(array, start, end);
+    quickSort(array, start, pivot - 1);
+    quickSort(array, pivot + 1, end);
   }
 }
 
